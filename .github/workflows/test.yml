@@ -21,7 +21,8 @@ jobs:
           - 5432:5432
     strategy:
       matrix:
-        python: [3.6]
+        python-version: [3.6]
+        tox_env: [py36]
         galaxy_version: [dev,
                          release_20.09,
                          release_20.05,
@@ -38,7 +39,7 @@ jobs:
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ matrix.python-version }}
           galaxy-version: ${{ matrix.galaxy_version }}
       - name: install
         run: |

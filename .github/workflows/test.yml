@@ -64,7 +64,7 @@ jobs:
           export BIOBLEND_GALAXY_MASTER_API_KEY=$(LC_ALL=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 32)
           export BIOBLEND_GALAXY_USER_EMAIL=${USER}@localhost.localdomain
           DATABASE_CONNECTION=postgresql://postgres:@localhost/galaxy-travis
-          eval "echo \"$(cat "${TRAVIS_BUILD_DIR}/tests/template_galaxy.ini")\"" > "$GALAXY_CONFIG_FILE"
+          eval "echo \"$(cat "$~/tests/template_galaxy.ini")\"" > "$GALAXY_CONFIG_FILE"
           # Update psycopg2 requirement to a version compatible with glibc 2.26 for Galaxy releases 16.01-18.01, see https://github.com/psycopg/psycopg2-wheels/issues/2
           |
            if [ -f lib/galaxy/dependencies/conditional-requirements.txt ]; then

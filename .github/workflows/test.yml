@@ -55,8 +55,8 @@ jobs:
 
           # Install Galaxy
           wget https://github.com/galaxyproject/galaxy/archive/${{ matrix.galaxy_version }}.tar.gz
-          tar xvzf ${GALAXY_VERSION}.tar.gz | tail
-          cd galaxy-${GALAXY_VERSION}
+          tar xvzf ${{ matrix.galaxy_version }}.tar.gz | tail
+          cd galaxy-${{ matrix.galaxy_version }}
           GALAXY_DIR=$PWD
           # Export GALAXY_CONFIG_FILE environment variable to be used by run_galaxy.sh
           export GALAXY_CONFIG_FILE=config/galaxy.ini

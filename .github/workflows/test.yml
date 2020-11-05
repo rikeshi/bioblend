@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python: [3.7, 3.8, 3.9]
+        python: [3.6]
         galaxy_version: [dev,
                          release_20.09,
                          release_20.05,
@@ -19,6 +19,9 @@ jobs:
                          release_17.09]
     steps:
       - uses: actions/checkout@v2
+      - uses: harmon758/postgresql-action@v1
+        with:
+          postgresql version: '11'
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -27,13 +30,14 @@ jobs:
       - name: install
         run: |
           python -m pip install 'tox>=1.8.0' 'virtualenv>=20.0.14'
-      - name: prepare
+      - name: prepare ${{ matrix.galaxy_version }}
+
         run: |
           # Create a PostgreSQL database for Galaxy. The default SQLite3 database makes test fail randomly because of "database locked" error.
           - createdb -U postgres galaxy-travis
           # Install Galaxy
           - cd $HOME
-          - wget https://github.com/galaxyproject/galaxy/archive/${galaxy-version}.tar.gz
+          - wget https://github.com/galaxyproject/galaxy/archive/${{ matrix.galaxy_version }}.tar.gz
           - tar xvzf ${GALAXY_VERSION}.tar.gz | tail
           - cd galaxy-${GALAXY_VERSION}
           - GALAXY_DIR=$PWD

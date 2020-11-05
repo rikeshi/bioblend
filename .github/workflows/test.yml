@@ -45,9 +45,10 @@ jobs:
       - name: prepare ${{ matrix.galaxy_version }}
         env:
           PGPASSWORD: postgres
+          PGPORT: postgres
         run: |
           # Create a PostgreSQL database for Galaxy. The default SQLite3 database makes test fail randomly because of "database locked" error.
-          createdb -U postgres galaxy-travis
+          createdb -U postgres -p $PGPORT galaxy-travis
 
 ##           Install Galaxy
 #          cd $HOME

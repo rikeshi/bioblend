@@ -1,0 +1,54 @@
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+        galaxy-version: [dev,
+                         release_20.09,
+                         release_20.05,
+                         release_20.01,
+                         release_19.09,
+                         release_19.05,
+                         release_19.01,
+                         release_18.09,
+                         release_18.05,
+                         release_18.01,
+                         release_17.09]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - name: install
+        run: |
+          python -m pip install 'tox>=1.8.0' 'virtualenv>=20.0.14'
+      - name: prepare
+        with:
+          python-version: ${{ matrix.python }}
+        run: |
+          # Create a PostgreSQL database for Galaxy. The default SQLite3 database makes test fail randomly because of "database locked" error.
+          - createdb -U postgres galaxy-travis
+          # Install Galaxy
+          - cd $HOME
+          - wget https://github.com/galaxyproject/galaxy/archive/${galaxy-version}.tar.gz
+          - tar xvzf ${GALAXY_VERSION}.tar.gz | tail
+          - cd galaxy-${GALAXY_VERSION}
+          - GALAXY_DIR=$PWD
+          # Export GALAXY_CONFIG_FILE environment variable to be used by run_galaxy.sh
+          - export GALAXY_CONFIG_FILE=config/galaxy.ini
+          # Export BIOBLEND_ environment variables to be used in BioBlend tests
+          - export BIOBLEND_GALAXY_MASTER_API_KEY=$(LC_ALL=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 32)
+          - export BIOBLEND_GALAXY_USER_EMAIL=${USER}@localhost.localdomain
+          - DATABASE_CONNECTION=postgresql://postgres:@localhost/galaxy-travis
+          - eval "echo \"$(cat "${TRAVIS_BUILD_DIR}/tests/template_galaxy.ini")\"" > "$GALAXY_CONFIG_FILE"
+          # Update psycopg2 requirement to a version compatible with glibc 2.26 for Galaxy releases 16.01-18.01, see https://github.com/psycopg/psycopg2-wheels/issues/2
+          - |
+            if [ -f lib/galaxy/dependencies/conditional-requirements.txt ]; then
+              sed -i.bak -e 's/psycopg2==2.6.1/psycopg2==2.7.3.1/' lib/galaxy/dependencies/conditional-requirements.txt
+            fi
+          # Start Galaxy and wait for successful server start
+          - export GALAXY_SKIP_CLIENT_BUILD=1

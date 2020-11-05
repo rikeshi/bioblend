@@ -68,7 +68,6 @@ jobs:
 
           eval "echo \"$(cat "${{ github.workspace }}/tests/template_galaxy.ini")\"" > "$GALAXY_CONFIG_FILE"
           # Update psycopg2 requirement to a version compatible with glibc 2.26 for Galaxy releases 16.01-18.01, see https://github.com/psycopg/psycopg2-wheels/issues/2
-          |
            if [ -f lib/galaxy/dependencies/conditional-requirements.txt ]; then
              sed -i.bak -e 's/psycopg2==2.6.1/psycopg2==2.7.3.1/' lib/galaxy/dependencies/conditional-requirements.txt
            fi

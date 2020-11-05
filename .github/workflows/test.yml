@@ -73,3 +73,15 @@ jobs:
            fi
           # Start Galaxy and wait for successful server start
           export GALAXY_SKIP_CLIENT_BUILD=1
+
+
+      - name: run test ${{ matrix.galaxy_version }}
+        env:
+          PGPASSWORD: postgres
+          PGPORT: 5432
+          PGHOST: localhost
+        run: |
+           GALAXY_RUN_ALL=1 "${{ github.workspace }}/run_galaxy.sh" --daemon --wait
+           export BIOBLEND_GALAXY_URL=http://localhost:8080
+           cd ${{ github.workspace }}
+           tox -e $TOX_ENV

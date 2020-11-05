@@ -60,20 +60,18 @@ jobs:
           cd galaxy-${{ matrix.galaxy_version }}
           echo "GALAXY_DIR=$PWD" >> $GITHUB_ENV
           # Export GALAXY_CONFIG_FILE environment variable to be used by run_galaxy.sh
-          export GALAXY_CONFIG_FILE=config/galaxy.ini
+          echo "GALAXY_CONFIG_FILE=config/galaxy.ini" >> $GITHUB_ENV
           # Export BIOBLEND_ environment variables to be used in BioBlend tests
-          export BIOBLEND_GALAXY_MASTER_API_KEY=$(LC_ALL=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 32)
-          export BIOBLEND_GALAXY_USER_EMAIL=${USER}@localhost.localdomain
+          echo "BIOBLEND_GALAXY_MASTER_API_KEY=$(LC_ALL=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 32)" >> $GITHUB_ENV
+          echo "BIOBLEND_GALAXY_USER_EMAIL=${USER}@localhost.localdomain" >> $GITHUB_ENV
           DATABASE_CONNECTION=postgresql://postgres:@localhost/galaxy-travis
-          ls -la ${{ github.workspace }}
-
           eval "echo \"$(cat "${{ github.workspace }}/tests/template_galaxy.ini")\"" > "$GALAXY_CONFIG_FILE"
           # Update psycopg2 requirement to a version compatible with glibc 2.26 for Galaxy releases 16.01-18.01, see https://github.com/psycopg/psycopg2-wheels/issues/2
            if [ -f lib/galaxy/dependencies/conditional-requirements.txt ]; then
              sed -i.bak -e 's/psycopg2==2.6.1/psycopg2==2.7.3.1/' lib/galaxy/dependencies/conditional-requirements.txt
            fi
           # Start Galaxy and wait for successful server start
-          export GALAXY_SKIP_CLIENT_BUILD=1
+          echo "export GALAXY_SKIP_CLIENT_BUILD=1" >> $GITHUB_ENV
 
 
       - name: run test ${{ matrix.galaxy_version }}
@@ -82,8 +80,8 @@ jobs:
           PGPORT: 5432
           PGHOST: localhost
         run: |
-           echo $GALAXY_DIR
-#           GALAXY_RUN_ALL=1 "${{ github.workspace }}/run_galaxy.sh" --daemon --wait
-#           export BIOBLEND_GALAXY_URL=http://localhost:8080
-#           cd ${{ github.workspace }}
-#           tox -e $TOX_ENV
+           ls -la $GALAXY_DIR
+           GALAXY_RUN_ALL=1 "${{ github.workspace }}/run_galaxy.sh" --daemon --wait
+           export BIOBLEND_GALAXY_URL=http://localhost:8080
+           cd ${{ github.workspace }}
+           tox -e $TOX_ENV

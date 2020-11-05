@@ -48,10 +48,10 @@ jobs:
         env:
           PGPASSWORD: postgres
           PGPORT: 5432
-          $PGHOST: postgres
+          PGHOST: localhost
         run: |
           # Create a PostgreSQL database for Galaxy. The default SQLite3 database makes test fail randomly because of "database locked" error.
-          createdb -h localhost -p 5432 -U postgres galaxy-travis
+          createdb -h $PGHOST -p $PGPORT -U postgres galaxy-travis
 
 ##           Install Galaxy
 #          cd $HOME

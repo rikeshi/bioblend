@@ -17,6 +17,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
     strategy:
       matrix:
         python: [3.6]
@@ -49,7 +51,7 @@ jobs:
           $PGHOST: postgres
         run: |
           # Create a PostgreSQL database for Galaxy. The default SQLite3 database makes test fail randomly because of "database locked" error.
-          createdb -h $PGHOST -p $PGPORT galaxy-travis
+          createdb -h $PGHOST -U postgres -p $PGPORT galaxy-travis
 
 ##           Install Galaxy
 #          cd $HOME

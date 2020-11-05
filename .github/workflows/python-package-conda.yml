@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04ss
 
     steps:
     - uses: actions/checkout@v2
@@ -13,4 +13,6 @@ jobs:
       with:
         python-version: 3.9
     - name: lint
-      run: tox -e flake8
+      run: |
+      python -m pip install 'tox>=1.8.0' 'virtualenv>=20.0.14'
+      tox -e flake8

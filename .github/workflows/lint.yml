@@ -1,17 +1,14 @@
-name: Python Package using Conda
-
 on: [push]
 
 jobs:
-  lint:
+  Lint:
     runs-on: ubuntu-20.04
-
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
+    - name: Lint
       uses: actions/setup-python@v2
       with:
-        python-version: 3.9
+        python-version: 3.6
     - name: lint
       run: |
         python -m pip install 'tox>=1.8.0' 'virtualenv>=20.0.14'

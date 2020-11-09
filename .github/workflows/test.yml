@@ -84,13 +84,6 @@ jobs:
         run: |
            ls -la $GALAXY_DIR
            ls -la $GALAXY_CONFIG_FILE
-           ls -la $GALAXY_CONFIG_FILE
-           ls -la $GALAXY_CONFIG_FILE
-           ls -la $GALAXY_CONFIG_FILE
-           ls -la $GALAXY_CONFIG_FILE
-           ls -la $GALAXY_CONFIG_FILE
-           ls -la $GALAXY_CONFIG_FILE
-           ls -la $GALAXY_CONFIG_FILE
            GALAXY_RUN_ALL=1 "${{ github.workspace }}/run_galaxy.sh" --daemon --wait
            export BIOBLEND_GALAXY_URL=http://localhost:8080
            cd ${{ github.workspace }}

@@ -56,7 +56,6 @@ jobs:
           sudo rm -f /etc/boto.cfg
           sudo apt update && sudo apt install python2.7 -y
           export GALAXY_VERSION=${{ matrix.galaxy_version }}
-          which python2
           virtualenv -p /usr/bin/python2 .venv
           source .venv/bin/activate
           createdb -U postgres galaxy-travis
@@ -91,4 +90,5 @@ jobs:
         if: ${{ failure() }}
         run: |
           cat galaxy-${{ matrix.galaxy_version }}/main.log
+
 

@@ -77,3 +77,9 @@ jobs:
           export BIOBLEND_GALAXY_URL=http://localhost:8080
           cd ${{ github.workspace }}
           tox -e ${{ matrix.tox_env }}
+
+      - name: The job has failed
+        if: ${{ failure() }}
+        run: |
+          cat galaxy-${{ matrix.galaxy_version }}/main.log
+

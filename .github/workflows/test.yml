@@ -61,6 +61,7 @@ jobs:
           echo "GALAXY_DIR=$PWD" >> $GITHUB_ENV
           # Export GALAXY_CONFIG_FILE environment variable to be used by run_galaxy.sh
           export CONFIG=${{ github.workspace }}/galaxy-${{ matrix.galaxy_version }}/config/galaxy.ini
+
           # Export BIOBLEND_ environment variables to be used in BioBlend tests
           echo "BIOBLEND_GALAXY_MASTER_API_KEY=$(LC_ALL=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 32)" >> $GITHUB_ENV
           echo "BIOBLEND_GALAXY_USER_EMAIL=${USER}@localhost.localdomain" >> $GITHUB_ENV

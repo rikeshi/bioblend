@@ -55,6 +55,7 @@ jobs:
         run: |
           sudo rm -f /etc/boto.cfg
           sudo apt update && sudo apt install python2.7 -y
+          export GALAXY_VERSION=${{ matrix.galaxy_version }}
           which python2
           virtualenv -p /usr/bin/python2 .venv
           source .venv/bin/activate
@@ -73,10 +74,18 @@ jobs:
           fi
           export GALAXY_SKIP_CLIENT_BUILD=1
           GALAXY_RUN_ALL=1 "${{ github.workspace }}/run_galaxy.sh" --daemon --wait
+
           deactivate
           export BIOBLEND_GALAXY_URL=http://localhost:8080
           cd ${{ github.workspace }}
           tox -e ${{ matrix.tox_env }}
+
+      - name: Cache multiple paths
+        uses: actions/cache@v2
+        with:
+          path: |
+            galaxy/.venv/
+          key: ${{ runner.os }}-selenium
 
       - name: The job has failed
         if: ${{ failure() }}

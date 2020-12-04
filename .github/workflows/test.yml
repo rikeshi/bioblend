@@ -56,7 +56,8 @@ jobs:
           sudo rm -f /etc/boto.cfg
           sudo apt update && sudo apt install python2.7 -y
           which python2
-          virtualenv -p /usr/bin/python2 venv
+          virtualenv -p /usr/bin/python2 .venv
+          source .venv/bin/activate
           createdb -U postgres galaxy-travis
           wget https://github.com/galaxyproject/galaxy/archive/${{ matrix.galaxy_version }}.tar.gz
           tar xvzf ${{ matrix.galaxy_version }}.tar.gz | tail
@@ -72,6 +73,7 @@ jobs:
           fi
           export GALAXY_SKIP_CLIENT_BUILD=1
           GALAXY_RUN_ALL=1 "${{ github.workspace }}/run_galaxy.sh" --daemon --wait
+          deactivate
           export BIOBLEND_GALAXY_URL=http://localhost:8080
           cd ${{ github.workspace }}
           tox -e ${{ matrix.tox_env }}

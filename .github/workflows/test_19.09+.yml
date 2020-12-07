@@ -1,0 +1,65 @@
+name: Test BioBlend (Galaxy 19.09+)
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.6]
+
+        galaxy-version: [dev,
+                         release_20.09,
+                         release_20.05,
+                         release_20.01,
+                         release_19.09]
+
+        include:
+          - python-version: 3.7
+            galaxy-version: dev
+          - python-version: 3.8
+            galaxy-version: dev
+          - python-version: 3.9
+            galaxy-version: dev
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Cache python modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-venv-${{ matrix.python-version }}
+        with:
+          path: .venv/
+          key: ${{ runner.os }}-test-${{ env.cache-name }}
+
+      - name: Cache Galaxy
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-galaxy-${{ matrix.galaxy-version }}
+        with:
+          path: galaxy-${{ matrix.galaxy-version }}
+          key: ${{ runner.os }}-test-${{ env.cache-name }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install virtualenv
+        run: |
+          python -m pip install --upgrade pip
+          pip install virtualenv
+
+      - name: Download Galaxy (${{ matrix.galaxy-version }})
+        run: |
+          wget --quiet https://github.com/galaxyproject/galaxy/archive/${{ matrix.galaxy-version }}.tar.gz
+          tar -xzf ${{ matrix.galaxy-version }}.tar.gz | tail -n 1
+
+      - name: Run BioBlend tests
+        run: |
+          ./run_bioblend_tests.sh -g galaxy-${{ matrix.galaxy-version }} -e py

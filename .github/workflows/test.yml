@@ -1,65 +1,90 @@
-name: Test BioBlend (Galaxy 19.09+)
-
 on: [push, pull_request]
-
+name: tests
 jobs:
   test:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-20.04
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     strategy:
       fail-fast: false
       matrix:
         python-version: [3.6]
-
-        galaxy-version: [dev,
+        tox_env: [py36]
+        galaxy_version: [dev,
                          release_20.09,
                          release_20.05,
                          release_20.01,
-                         release_19.09]
-
-        include:
-          - python-version: 3.7
-            galaxy-version: dev
-          - python-version: 3.8
-            galaxy-version: dev
-          - python-version: 3.9
-            galaxy-version: dev
+                         release_19.09,
+                         release_19.05,
+                         release_19.01,
+                         release_18.09,
+                         release_18.05,
+                         release_18.01,
+                         release_17.09]
 
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
-
-      - name: Cache python modules
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-venv-${{ matrix.python-version }}
-        with:
-          path: .venv/
-          key: ${{ runner.os }}-test-${{ env.cache-name }}
-
-      - name: Cache Galaxy
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-galaxy-${{ matrix.galaxy-version }}
-        with:
-          path: galaxy-${{ matrix.galaxy-version }}
-          key: ${{ runner.os }}-test-${{ env.cache-name }}
-
-      - name: Setup Python
+      - uses: actions/checkout@v2
+      - name: Set up Python for BioBlend
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Install virtualenv
+          galaxy-version: ${{ matrix.galaxy_version }}
+      - name: install
         run: |
-          python -m pip install --upgrade pip
-          pip install virtualenv
+          python -m pip install 'tox>=1.8.0' 'virtualenv>=20.0.14'
 
-      - name: Download Galaxy (${{ matrix.galaxy-version }})
+      - name: prepare ${{ matrix.galaxy_version }}
+        env:
+          PGPASSWORD: postgres
+          PGPORT: 5432
+          PGHOST: localhost
         run: |
-          wget --quiet https://github.com/galaxyproject/galaxy/archive/${{ matrix.galaxy-version }}.tar.gz
-          tar -xzf ${{ matrix.galaxy-version }}.tar.gz | tail -n 1
+          sudo apt update && sudo apt install python2.7 -y
+          export GALAXY_VERSION=${{ matrix.galaxy_version }}
+          virtualenv -p /usr/bin/python2 .venv
+          source .venv/bin/activate
+          createdb -U postgres galaxy-travis
+          wget https://github.com/galaxyproject/galaxy/archive/${{ matrix.galaxy_version }}.tar.gz
+          tar xvzf ${{ matrix.galaxy_version }}.tar.gz | tail
+          cd galaxy-${{ matrix.galaxy_version }}
+          export GALAXY_DIR=$PWD
+          export GALAXY_CONFIG_FILE=config/galaxy.ini
+          export BIOBLEND_GALAXY_MASTER_API_KEY=$(LC_ALL=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 32)
+          export BIOBLEND_GALAXY_USER_EMAIL=${USER}@localhost.localdomain
+          export DATABASE_CONNECTION=postgresql://postgres:@localhost/galaxy-travis
+          eval "echo \"$(cat "${{ github.workspace }}/tests/template_galaxy.ini")\"" > "$GALAXY_CONFIG_FILE"
+          if [ -f lib/galaxy/dependencies/conditional-requirements.txt ]; then
+             sed -i.bak -e 's/psycopg2==2.6.1/psycopg2==2.7.3.1/' lib/galaxy/dependencies/conditional-requirements.txt
+          fi
+          export GALAXY_SKIP_CLIENT_BUILD=1
+          GALAXY_RUN_ALL=1 "${{ github.workspace }}/run_galaxy.sh" --daemon --wait
 
-      - name: Run BioBlend tests
+          deactivate
+          export BIOBLEND_GALAXY_URL=http://localhost:8080
+          cd ${{ github.workspace }}
+          tox -e ${{ matrix.tox_env }}
+
+      - name: Cache pip dir
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: pip-cache-${{ matrix.tox_env }}-${{ matrix.galaxy_version }}
+
+      - name: The job has failed
+        if: ${{ failure() }}
         run: |
-          ./run_bioblend_tests.sh -g galaxy-${{ matrix.galaxy-version }} -e py
+          cat galaxy-${{ matrix.galaxy_version }}/main.log

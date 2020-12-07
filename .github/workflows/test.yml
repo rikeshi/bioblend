@@ -1,4 +1,4 @@
-on: [push]
+on: [push, pull_request]
 name: tests
 jobs:
   test:
@@ -90,4 +90,3 @@ jobs:
         if: ${{ failure() }}
         run: |
           cat galaxy-${{ matrix.galaxy_version }}/main.log
-

@@ -53,7 +53,6 @@ jobs:
           PGPORT: 5432
           PGHOST: localhost
         run: |
-          sudo rm -f /etc/boto.cfg
           sudo apt update && sudo apt install python2.7 -y
           export GALAXY_VERSION=${{ matrix.galaxy_version }}
           virtualenv -p /usr/bin/python2 .venv

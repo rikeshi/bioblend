@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python for BioBlend
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
@@ -90,5 +90,4 @@ jobs:
         if: ${{ failure() }}
         run: |
           cat galaxy-${{ matrix.galaxy_version }}/main.log
-
 

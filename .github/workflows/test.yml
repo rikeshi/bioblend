@@ -81,9 +81,8 @@ jobs:
       - name: Cache multiple paths
         uses: actions/cache@v2
         with:
-          path: |
-            galaxy/.venv/
-          key: ${{ runner.os }}-selenium
+          path: ~/.cache/pip
+          key: pip-cache-${{ matrix.tox_env }}-${{ matrix.galaxy_version }}
 
       - name: The job has failed
         if: ${{ failure() }}

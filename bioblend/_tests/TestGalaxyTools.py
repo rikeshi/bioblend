@@ -146,8 +146,8 @@ class TestGalaxyTools(GalaxyTestBase.GalaxyTestBase):
     def test_get_citations(self):
         citations = self.gi.tools.get_citations('sra_source')
         self.assertEqual(len(citations), 2)
-        self.assertTrue('Blankenberg_2011' in citations[0]['content'])
-        self.assertTrue('Kent_2002' in citations[1]['content'])
+        self.assertIn('Blankenberg_2011', citations[0]['content'])
+        self.assertIn('Kent_2002', citations[1]['content'])
 
     def test_tool_dependency_uninstall(self):
         status = self.gi.tools.uninstall_dependencies('CONVERTER_fasta_to_bowtie_color_index')
